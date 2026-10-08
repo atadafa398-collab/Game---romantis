@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Game Time 💖</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;padding:20px;font-family:Arial,sans-serif;background:linear-gradient(135deg,#ffe5ef,#e9e5ff);display:flex;align-items:center;justify-content:center;color:#333}.card{width:min(520px,100%);background:#fff;border-radius:24px;padding:25px 20px;box-shadow:0 10px 30px #0002;text-align:center}h1,h2{color:#c94f82}.progress,.hint{color:#888;font-size:14px}.q{font-size:19px;font-weight:bold;margin:18px 0}.options{display:grid;gap:10px}.options button,.main{border:0;border-radius:13px;padding:13px;font-size:16px;cursor:pointer;background:#f5d5e3}.main{background:#d65389;color:white;margin-top:18px}.selected{outline:3px solid #d65389}textarea,input{width:100%;padding:13px;margin:8px 0 14px;border:2px solid #ead2dd;border-radius:12px;font-size:16px}textarea{min-height:100px;resize:vertical}.hidden{display:none}.typed{text-align:left;line-height:1.7;min-height:180px}.cursor{animation:b .7s infinite}@keyframes b{50%{opacity:0}}
+</style>
+</head>
+<body>
+<div class="card">
+<section id="start">
+<h1>🎮 GAME TIME 🎮</h1>
+<p>Sebelum kamu tahu sesuatu yang ingin aku sampaikan…</p>
+<p>Kita main 10 permainan kecil dulu. 😆</p>
+<button class="main" onclick="start()">MULAI GAME ➜</button>
+</section>
+
+<section id="game" class="hidden">
+<div class="progress" id="progress"></div>
+<h2 id="title"></h2><div id="content"></div>
+<button class="main" onclick="next()">LANJUT ➜</button>
+<p class="hint" id="hint"></p>
+</section>
+
+<section id="finish" class="hidden">
+<h1>🎉 GAME SELESAI!</h1>
+<p>Kamu berhasil menyelesaikan 10 level! 🎊</p>
+<p>Semua jawabanmu sudah terkumpul.</p>
+<button class="main" onclick="send()">📤 KIRIM JAWABAN</button>
+<p class="hint" id="status"></p>
+</section>
+
+<section id="message" class="hidden">
+<h1>💌 BUAT KAMU</h1>
+<div id="typed" class="typed"></div>
+<div id="buttons" class="hidden">
+<button class="main" onclick="alert('Terima kasih sudah jujur. ❤️')">💖 Aku juga suka kamu</button>
+<button onclick="alert('Terima kasih sudah jujur. 🌷')">🌷 Kita berteman saja</button>
+</div>
+</section>
+</div>
+
+<script>
+const A=Array(10).fill(""), L=[
+["🌅 LEVEL 1/10 — PILIH SUASANA",`<div class=q>Kamu lebih suka:</div><div class=options>
+<button onclick="pick(this,'Sunset')">🌅 Sunset</button><button onclick="pick(this,'Hujan')">🌧️ Hujan</button>
+<button onclick="pick(this,'Malam')">🌙 Malam</button><button onclick="pick(this,'Pagi')">☀️ Pagi</button></div><p>Kenapa?</p><textarea id=t placeholder="Ketik jawabanmu..."></textarea>`],
+["🗺️ LEVEL 2/10 — MAU KE MANA?",`<div class=q>Kalau bisa pergi ke mana saja sekarang, kamu mau ke mana?</div><textarea id=t placeholder="Ketik jawabanmu..."></textarea>`],
+["😆 LEVEL 3/10 — BIKIN SENYUM",`<div class=q>Apa hal kecil yang paling gampang bikin kamu tersenyum?</div><textarea id=t placeholder="Ketik jawabanmu..."></textarea>`],
+["💬 LEVEL 4/10 — PILIH CARA BERSAMA",`<div class=q>Kamu lebih pilih:</div><div class=options>
+<button onclick="pick(this,'Chat')">💬 Chat</button><button onclick="pick(this,'Telepon')">📞 Telepon</button>
+<button onclick="pick(this,'Jalan-jalan')">🚶 Jalan-jalan</button><button onclick="pick(this,'Makan sambil ngobrol')">🍜 Makan sambil ngobrol</button></div><p>Kenapa?</p><textarea id=t placeholder="Ketik jawabanmu..."></textarea>`],
+["❤️ LEVEL 5/10 — TIGA HAL",`<div class=q>Sebutkan 3 hal yang kamu suka dari seseorang.</div><input id=a1 placeholder="1. ..."><input id=a2 placeholder="2. ..."><input id=a3 placeholder="3. ...">`],
+["✨ LEVEL 6/10 — SATU KEINGINAN",`<div class=q>Kalau boleh punya satu keinginan hari ini, kamu ingin apa?</div><textarea id=t placeholder="Ketik jawabanmu..."></textarea>`],
+["🧩 LEVEL 7/10 — TEBAK KATA",`<div class=q>Aku punya 5 huruf.</div><p>💭 Sering muncul ketika memikirkan seseorang.<br>😊 Bisa membuat seseorang tersenyum.<br>❤️ Kadang disimpan sendiri.</p><input id=t maxlength=30 placeholder="Tebak katanya...">`],
+["⚡ LEVEL 8/10 — JAWAB CEPAT",`<div class=q>Pilih salah satu di setiap pasangan:</div>
+<p>🌙 Malam atau ☀️ pagi?</p><input id=q1 placeholder="Jawaban 1"><p>💬 Chat atau 👋 ketemu?</p><input id=q2 placeholder="Jawaban 2">
+<p>🍫 Manis atau 🍟 asin?</p><input id=q3 placeholder="Jawaban 3"><p>🎬 Film atau 🎮 game?</p><input id=q4 placeholder="Jawaban 4">
+<p>😌 Sendiri atau 😊 bersama seseorang?</p><input id=q5 placeholder="Jawaban 5">`],
+["💌 LEVEL 9/10 — LENGKAPI",`<div class=q>Menurut kamu, seseorang bisa menjadi spesial karena…</div><textarea id=t placeholder="Seseorang bisa menjadi spesial karena..."></textarea>`],
+["🔐 LEVEL 10/10 — PERTANYAAN TERAKHIR",`<div class=q>Menurut kamu, apakah seseorang bisa diam-diam menyimpan rasa kepada orang yang membuatnya nyaman?</div>
+<div class=options><button onclick="pick(this,'Mungkin')">🤔 Mungkin</button><button onclick="pick(this,'Iya')">❤️ Iya</button><button onclick="pick(this,'Bisa jadi')">😆 Bisa jadi</button><button onclick="pick(this,'Tidak tahu')">🙈 Tidak tahu</button></div>
+<p>Bonus: Apa tandanya?</p><textarea id=t placeholder="Ketik jawabanmu..."></textarea>`]
+];
+let i=0,choice="";
+function start(){startHide();render()}
+function startHide(){document.getElementById("start").classList.add("hidden");document.getElementById("game").classList.remove("hidden")}
+function pick(b,v){document.querySelectorAll(".options button").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");choice=v}
+function render(){choice="";progress.textContent="Level "+(i+1)+" dari 10";title.textContent=L[i][0];content.innerHTML=L[i][1];hint.textContent=""}
+function next(){
+ let v="";let t=document.getElementById("t");if(t)v=t.value.trim();
+ if([0,3,9].includes(i)&&choice)v=(v?choice+" — ":"")+choice;
+ if(i===4)v=[a1.value,a2.value,a3.value].join(" | ");
+ if(i===7)v=[q1.value,q2.value,q3.value,q4.value,q5.value].join(" | ");
+ if(!v.trim()){hint.textContent="Isi jawabanmu dulu 😊";return}
+ A[i]=v;i++;
+ if(i<10)render();else{game.classList.add("hidden");finish.classList.remove("hidden")}
+}
+function send(){
+ status.textContent="✅ Jawaban berhasil dikirim!";
+ setTimeout(()=>{finish.classList.add("hidden");message.classList.remove("hidden");type()},800);
+}
+function type(){
+ let s="Hai, kamu…\n\nSudah lama aku menyimpan sesuatu yang ingin aku sampaikan. 😊\n\nKamu sering ada di pikiranku, dan tanpa sadar…\n\naku suka kamu. ❤️\n\nAku cuma ingin jujur tentang perasaanku.\n\nSekarang aku penasaran…",n=0;
+ function go(){typed.innerHTML=s.slice(0,n).replace(/\n/g,"<br>")+"<span class=cursor>▌</span>";n++;if(n<=s.length)setTimeout(go,28);else buttons.classList.remove("hidden")}go()
+}
+</script>
+</body></html>
